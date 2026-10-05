@@ -8,13 +8,11 @@
 
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?style=for-the-badge&logo=tauri&logoColor=white)](https://tauri.app/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Swing](https://img.shields.io/badge/UI-Java%20Swing-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://docs.oracle.com/javase/tutorial/uiswing/)
+[![FlatLaf](https://img.shields.io/badge/Look%20%26%20Feel-FlatLaf-4B6EAF?style=for-the-badge)](https://www.formdev.com/flatlaf/)
 [![C++](https://img.shields.io/badge/C++17-Raw%20Sockets-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)](https://isocpp.org/)
 [![CMake](https://img.shields.io/badge/CMake-3.20+-064F8C?style=for-the-badge&logo=cmake&logoColor=white)](https://cmake.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Rust](https://img.shields.io/badge/Rust-stable-000000?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Spring Security](https://img.shields.io/badge/Spring%20Security-JWT-4CA154?style=for-the-badge&logo=springsecurity&logoColor=white)](#)
 
 <br/>
@@ -30,10 +28,10 @@
 - [Visão Geral](#-visão-geral)
 - [Arquitetura](#-arquitetura)
 - [Módulos](#-módulos)
-  - [Merum-Api — Servidor C2 Spring Boot](#merum-api--servidor-c2-spring-boot)
-  - [Merum-Client — Desktop App (Tauri)](#merum-client--desktop-app-tauri)
-  - [Merum-Arsenal — Network Session (Blue Team)](#merum-arsenal--network-session-blue-team)
-  - [Merum-Arsenal — Agents (Red Team)](#merum-arsenal--agents-red-team)
+  - [app — Servidor C2 e cliente Swing](#app--servidor-c2-e-cliente-swing)
+  - [Cliente desktop Swing](#cliente-desktop-swing)
+  - [modules — Network Session (Blue Team)](#modules--network-session-blue-team)
+  - [modules — Agents (Red Team)](#modules--agents-red-team)
 - [Stack Tecnológica](#-stack-tecnológica)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Instalação e Configuração](#-instalação-e-configuração)
@@ -47,11 +45,10 @@
 
 **Merum** é uma plataforma **Command & Control (C2)** full-stack construída do zero para aprendizado de segurança ofensiva e operações Red/Blue Team em ambientes controlados.
 
-O sistema opera em três camadas principais:
+O sistema opera em duas áreas principais:
 
-- **Servidor C2** (`Merum-Api`) — API REST Spring Boot 4 que orquestra agents, recebe telemetria de rede, gerencia sessões e autentica operadores via JWT.
-- **Desktop App** (`Merum-Client`) — Aplicação desktop Tauri 2 (Rust + Vite + React 19) para interação do operador: gerenciamento de agents, acesso shell, topologia de rede, geração de payloads e administração de usuários. Roda em Linux, Windows e macOS.
-- **Arsenal** (`Merum-Arsenal`) — Coleção de ferramentas nativas dividida em dois domínios:
+- **Aplicação Java** (`app`) — API REST Spring Boot 4 e cliente desktop Swing/FlatLaf no mesmo módulo Maven. A API orquestra agents, recebe telemetria de rede, gerencia sessões e autentica operadores via JWT; a interface oferece as ferramentas do operador.
+- **Arsenal** (`modules`) — Coleção de ferramentas nativas dividida em dois domínios:
   - **network-session** (Blue Team): scanner C++17 com Raw Sockets para fingerprint de rede local, descoberta ICMP e scan TCP, reportando resultados ao servidor C2.
   - **agents** (Red Team): implants, exploits, módulos de pós-exploração e ferramentas de ataque (em desenvolvimento).
 
@@ -61,16 +58,15 @@ O sistema opera em três camadas principais:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Merum-Client                            │
-│           Tauri 2 · Vite · React 19 · TypeScript                 │
+│             app — Cliente desktop Swing/FlatLaf                 │
+│                       Java 21                            │
 │                                                                  │
 │  Dashboard · Agents · Shell · Network · Payloads                 │
 │  Listeners · Scanner · Credentials · Users · Settings            │
 └────────────────────────┬─────────────────────────────────────────┘
-                         │ HTTP/REST direto (JWT Bearer no header)
-                         │ WebSocket ws://localhost:8080/term?token=JWT
+                         │ mesmo módulo Java
 ┌────────────────────────▼─────────────────────────────────────────┐
-│                      Merum-Api                             │
+│                        app                              │
 │                Spring Boot 4 · Java 21 · MySQL 8                 │
 │                                                                  │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌───────────────┐  │
@@ -98,7 +94,7 @@ O sistema opera em três camadas principais:
                   │ HTTP POST            │ ProcessBuilder
           (resultados do scan)    (execução do binário)
               ┌───▼──────────────────────▼───┐
-              │    Merum-Arsenal       │
+              │    modules       │
               │                              │
               │  ┌─────────────────────────┐ │
               │  │  libs/cpp/              │ │   ← libs compartilhadas
@@ -128,9 +124,9 @@ O sistema opera em três camadas principais:
 
 ## Módulos
 
-### Merum-Api — Servidor C2 Spring Boot
+### app — Servidor C2 e cliente Swing
 
-O núcleo da plataforma. Construído com **Spring Boot 4 + Java 21**, expõe uma API REST completa consumida pelo dashboard web e pelos agents.
+O núcleo da plataforma. Construído com **Spring Boot 4 + Java 21**, reúne a API REST consumida pelos agents e o cliente desktop Java/Swing usado pelos operadores.
 
 #### Controllers REST
 
@@ -180,14 +176,13 @@ LocationSource → IP_API / MANUAL / AGENT_REPORTED
 
 - **JWT** — autenticação stateless com expiração configurável
 - **Spring Security** — proteção de rotas com controle de acesso baseado em roles
-- **CORS** — configurado para origens Tauri (`tauri://localhost`, `https://tauri.localhost`) e Vite dev (`http://localhost:1420`)
 - **Bcrypt** — hash de senhas com fator de custo configurável
 
 ---
 
-### Merum-Client — Desktop App (Tauri)
+### Cliente desktop Swing
 
-Aplicação desktop para operadores construída com **Tauri 2 + Vite + React 19 + TypeScript + Tailwind CSS**. Compila para Linux, Windows e macOS a partir do mesmo código-fonte.
+Aplicação desktop para operadores construída com **Java 21 + Swing + FlatLaf**. O código vive em `app/src/main/java/com/manager/merum/client/` e é compilado pelo mesmo Maven build do servidor.
 
 #### Views
 
@@ -208,24 +203,22 @@ Aplicação desktop para operadores construída com **Tauri 2 + Vite + React 19 
 
 #### Detalhes de Implementação
 
-- Todas as chamadas à API centralizadas em `src/lib/client/api.ts` com injeção automática do JWT
-- Token armazenado em `localStorage` (`zk_token`) — seguro em Tauri, sem acesso externo ao webview
-- Lista de agents atualizada a cada 30 segundos via `setInterval`
-- Mapa mundial usa Leaflet com lazy loading via `React.lazy + Suspense`
-- URLs configuradas via `VITE_API_URL` e `VITE_WS_URL` (padrão: `http://localhost:8080`)
-- WebSocket do shell conecta diretamente ao Spring Boot com JWT na query string
-- Auth event: `zk:logout` dispara logout em qualquer componente sem prop drilling
+- `MerumClientApp` configura o tema e abre `MainFrame` na Event Dispatch Thread do Swing
+- Shell, views e componentes ficam no pacote `com.manager.merum.client.ui`
+- A fachada `MerumData` centraliza os dados apresentados pela interface
+- O tema customizado fica em `app/src/main/resources/themes/merum-flatlaf.properties`
+- O cliente pode ser executado a partir do JAR do `app` usando sua classe principal
 
 ---
 
-### Merum-Arsenal — Network Session (Blue Team)
+### modules — Network Session (Blue Team)
 
 Ferramentas para descoberta, fingerprint e inteligência de rede local. Os dados gerados alimentam o modelo `NetworkSession → NetworkNode → Port → Vulnerability` no servidor C2.
 
 #### Estrutura do Arsenal
 
 ```
-Merum-Arsenal/
+modules/
 ├── libs/
 │   └── cpp/
 │       ├── net_utils/               # Utilitários de rede compartilhados
@@ -276,7 +269,7 @@ Saída de progresso vai para **stderr**, JSON puro para **stdout** (necessário 
 **Sistema de build — CMake:**
 
 ```
-Merum-Arsenal/
+modules/
 ├── Makefile                         ← wrapper: make network-session
 ├── libs/CMakeLists.txt
 │   └── libs/cpp/CMakeLists.txt
@@ -295,7 +288,7 @@ build/                               ← artefatos gerados (gitignored)
 
 ---
 
-### Merum-Arsenal — Agents (Red Team)
+### modules — Agents (Red Team)
 
 Domínio em desenvolvimento. Estrutura preparada para escalar para centenas de ferramentas organizadas por fase de ataque e plataforma.
 
@@ -321,13 +314,12 @@ agents/
 | Banco de Dados | MySQL 8 |
 | Autenticação | Spring Security + JWT + Roles |
 | API REST | Spring Web MVC + Jackson |
-| Desktop App | Tauri 2 + Vite + React 19 + TypeScript |
-| Estilização UI | Tailwind CSS + variáveis CSS customizadas |
-| Mapa | Leaflet + Leaflet.markercluster |
+| Desktop App | Java 21 + Swing + FlatLaf |
+| Estilização UI | FlatLaf + tema customizado |
 | Scanner de Rede | C++17 + Raw Sockets (POSIX / Linux) |
 | Build (API) | Apache Maven 3 (wrapper mvnw) |
 | Build (Arsenal C++) | CMake 3.20+ + GNU Make (wrapper) |
-| Build (Desktop) | Rust + cargo + npm / Tauri CLI |
+| Build (Desktop) | Apache Maven 3 (mesmo módulo `app`) |
 | Automação | Python 3 |
 
 ---
@@ -337,7 +329,7 @@ agents/
 ```
 Merum/
 │
-├── Merum-Api/                          # Servidor C2 — Spring Boot
+├── app/                             # Servidor C2 + cliente Swing
 │   ├── src/main/java/com/manager/Merum/
 │   │   ├── controller/                        # REST: Agent, Auth, Recon
 │   │   ├── service/                           # Agents, Auth, Fingerprint, ProcessMgr, Location
@@ -348,40 +340,18 @@ Merum/
 │   │   ├── configuration/security/            # SecurityConfig + CorsConfig
 │   │   ├── util/                              # JwtUtil
 │   │   └── exception/                         # DuplicateAgentException
+│   ├── src/main/java/com/manager/merum/client/
+│   │   ├── MerumClientApp.java                # Entrypoint Swing
+│   │   ├── ui/                                # Shell, views, componentes e tema
+│   │   └── data/                              # Fachada de dados da UI
 │   ├── src/main/resources/
 │   │   ├── application.properties             # Configuração do servidor
-│   │   └── db/changelog/                      # Migrações Liquibase
+│   │   ├── db/changelog/                      # Migrações Liquibase
+│   │   └── themes/                            # Tema FlatLaf
 │   ├── .env                                   # Variáveis de ambiente (gitignored)
 │   └── pom.xml
 │
-├── Merum-Client/                       # Desktop App — Tauri 2 + Vite + React
-│   ├── src/
-│   │   ├── main.tsx                           # Entrypoint React (monta Root)
-│   │   ├── Root.tsx                           # Auth gate: LoginPage ou App
-│   │   ├── components/                        # Componentes React por feature
-│   │   │   ├── layout/                        # App (roteamento), LoginPage, Menubar, Sidebar
-│   │   │   ├── agents/                        # AgentsView, AgentShell, AgentTableHeader
-│   │   │   ├── dashboard/                     # DashboardView, WorldMap
-│   │   │   ├── network/                       # NetworkView
-│   │   │   ├── scanner/                       # ScannerView
-│   │   │   ├── payloads/                      # PayloadGenerator
-│   │   │   ├── listeners/                     # ListenersView
-│   │   │   ├── intelligence/                  # CredentialsView, LootView, ReportsView
-│   │   │   ├── users/                         # UsersView
-│   │   │   └── shared/                        # SettingsView
-│   │   └── lib/
-│   │       ├── client/api.ts                  # HTTP + WebSocket: req(), auth, shellWsUrl()
-│   │       ├── dtos/                          # Tipos espelho do Spring Boot
-│   │       └── models/                        # Tipos internos do frontend
-│   ├── src-tauri/                             # Core Rust (Tauri)
-│   │   ├── src/lib.rs                         # Ponto de entrada Tauri
-│   │   ├── Cargo.toml
-│   │   └── tauri.conf.json                    # Produto: nome, janela, URLs
-│   ├── vite.config.ts                         # Vite: alias @/, port 1420
-│   ├── .env                                   # VITE_API_URL, VITE_WS_URL (gitignored)
-│   └── package.json
-│
-├── Merum-Arsenal/                      # Arsenal de ferramentas nativas
+├── modules/                      # Arsenal de ferramentas nativas
 │   │
 │   ├── libs/cpp/                              # Bibliotecas compartilhadas C++17
 │   │   ├── net_utils/checksum/include/ src/   # ICMP checksum (in_cksum)
@@ -423,10 +393,8 @@ Merum/
 
 | Ferramenta | Versão | Finalidade |
 |---|---|---|
-| Java (JDK) | 21+ | Servidor C2 (API) |
-| Maven | 3.8+ | Build da API (ou use o wrapper `mvnw`) |
-| Node.js | 20+ | Cliente desktop (Tauri) |
-| Rust (cargo) | stable | Cliente desktop (Tauri core) |
+| Java (JDK) | 21+ | Servidor C2 e cliente Swing |
+| Maven | 3.8+ | Build do módulo Java (ou use o wrapper `mvnw`) |
 | MySQL | 8+ | Banco de dados |
 | GCC / G++ | 11+ com C++17 | Arsenal C++ |
 | CMake | 3.20+ | Sistema de build do Arsenal |
@@ -448,12 +416,12 @@ cd Merum
 
 ```bash
 # Configurar o arquivo de ambiente da API
-cp Merum-Api/.env.example Merum-Api/.env
-nano Merum-Api/.env
+cp app/.env.example app/.env
+nano app/.env
 
 ```
 
-**Variáveis mínimas obrigatórias em `Merum-Api/.env`:**
+**Variáveis mínimas obrigatórias em `app/.env`:**
 
 ```env
 DB_HOST=localhost
@@ -466,36 +434,31 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=SuaSenhaSegura!
 ```
 
-**Variáveis do cliente desktop em `Merum-Client/.env`:**
-
-```env
-VITE_API_URL=http://localhost:8080
-VITE_WS_URL=ws://localhost:8080
-```
-
 ### 3. Iniciar todos os serviços (recomendado)
 
 ```bash
-# Iniciar API + cliente desktop (Tauri dev)
+# Iniciar API + cliente desktop Swing
 ./Merum.sh
 ```
 
-O script inicia a API, aguarda o health check na porta `8080` e então abre o cliente Tauri. Use `Ctrl+C` para encerrar os dois processos.
+O script inicia a API, aguarda o health check na porta `8080` e então abre o cliente Swing. Use `Ctrl+C` para encerrar os dois processos.
 
 ### 4. Inicialização manual
 
 **Servidor API:**
 ```bash
-cd Merum-Api
+cd app
 ./mvnw spring-boot:run
 # API disponível em http://localhost:8080
 ```
 
 **Cliente desktop:**
 ```bash
-cd Merum-Client
-npm install
-npm run tauri dev
+cd app
+./mvnw clean package -DskipTests
+java -Dloader.main=com.manager.client.MerumClientApp \
+  -cp target/Merum-0.0.1-SNAPSHOT.jar \
+  org.springframework.boot.loader.launch.PropertiesLauncher
 # A janela do aplicativo é aberta automaticamente
 ```
 
@@ -508,7 +471,7 @@ sudo pacman -S cmake gcc
 # Instalar dependências (Debian/Ubuntu)
 sudo apt install build-essential cmake
 
-cd Merum-Arsenal
+cd modules
 
 # Build do scanner de rede local
 make network-session
@@ -526,7 +489,7 @@ sudo setcap cap_net_raw+ep build/network-session/tools/local-fingerprint/LocalFi
 
 **Usar no CLion:**
 ```
-File → Open → selecionar Merum-Arsenal/
+File → Open → selecionar modules/
 CLion detecta o CMakeLists.txt raiz automaticamente.
 Targets disponíveis: LocalFingerPrint · ping · D_DOS · net_utils
 ```
@@ -567,7 +530,7 @@ Targets disponíveis: LocalFingerPrint · ping · D_DOS · net_utils
 - [x] Rastreamento de geolocalização de agents (`AgentLocation` + `AgentLocationService`)
 - [x] `ProcessManagerService` para execução de binários externos
 - [x] Migrações de banco com Liquibase
-- [x] Configuração CORS + segurança para o frontend web
+- [x] Configuração de segurança da API
 - [ ] `GET /api/c2-server/sessions` — endpoint de listagem de sessões de rede
 - [ ] Canal WebSocket para comunicação em tempo real agent ↔ servidor
 - [ ] Loot: endpoints de upload, armazenamento e download de arquivos
@@ -580,32 +543,27 @@ Targets disponíveis: LocalFingerPrint · ping · D_DOS · net_utils
 
 ---
 
-**Desktop App (Cliente Tauri)**
-- [x] UI dark terminal com navegação completa de operador (12 views)
-- [x] Login com autenticação JWT + persistência via validação de expiração client-side (sem logout falso em restart)
-- [x] Login page com tema IDE dark consistente e monitor de latência de API pré-autenticação
-- [x] ErrorBoundary em Root — crashes de render exibem erro legível em vez de tela preta
-- [x] Dashboard com estatísticas de agents em tempo real e mapa mundial Leaflet
-- [x] Tabela de agents — API real, filtros, busca, ação de kill
-- [x] Gerenciamento de usuários — CRUD completo com atribuição de roles (API real)
-- [x] Design system coeso: tema dark terminal consistente em todas as 12 views (token CSS + PayloadGenerator como referência visual)
-- [~] Shell do agent — UI terminal pronta, WebSocket direto ao Spring Boot (precisa de backend real)
-- [~] Tabs do Shell — Process List, File Manager, Port Forward, Sysinfo (UI pronta, sem backend)
-- [~] View Scanner — UI + construtor de comandos pronto, execução de scan simulada
-- [~] Gerador de Payloads — UI de configuração completa, output de build falso (sem geração real)
-- [~] View de Topologia de Rede — UI pronta, aguardando endpoint `GET /api/c2-server/sessions`
-- [~] Construtor de Relatórios — seletor de seções e formato pronto, sem geração real
-- [~] Settings — todas as tabs UI completas, sem persistência (botões save/test não funcionais)
-- [ ] View Listeners — integração com backend (UI é placeholder vazio)
-- [ ] View Credentials — integração com backend (UI é placeholder vazio)
+**Desktop App (Cliente Java/Swing)**
+- [x] Cliente desktop mantido dentro do módulo Maven `app`
+- [x] Shell Swing com menubar, navigator, tabs, área de conteúdo e status bar
+- [x] Tema dark FlatLaf customizado
+- [x] Dashboard e views operacionais renderizados pela fachada `MerumData`
+- [x] Verificação off-screen das telas em modo headless
+- [~] Integração incremental da fachada `MerumData` com os serviços reais do Spring
+- [~] Shell do agent — UI pronta, backend real pendente
+- [~] View Scanner — UI pronta, execução real pendente
+- [~] Gerador de Payloads — UI pronta, geração real pendente
+- [~] View de Topologia de Rede — UI pronta, aguardando dados de sessões
+- [~] Construtor de Relatórios — UI pronta, exportação pendente
+- [ ] View Listeners — integração com backend
+- [ ] View Credentials — integração com backend
 - [ ] Navegador de arquivos Loot, preview e download
 - [ ] Feed do operador em tempo real via WebSocket
-- [ ] Grafo de topologia de rede (D3.js ou vis.js)
+- [ ] Grafo interativo de topologia de rede
 - [ ] Shell — execução real de comandos encaminhada ao agent
 - [ ] Download de payload após geração
 - [ ] Exportação de relatório (PDF / HTML)
-- [ ] Build de produção Tauri (`.deb`, `.AppImage`, `.exe`, `.dmg`)
-- [ ] Atualização automática via Tauri updater
+- [ ] Empacotamento nativo do cliente Java para Linux, Windows e macOS
 
 ---
 
@@ -821,7 +779,7 @@ Targets disponíveis: LocalFingerPrint · ping · D_DOS · net_utils
 **Infraestrutura & DevOps**
 - [ ] Docker Compose (API + MySQL + Redis em containers)
 - [ ] Dockerfile para a API Spring Boot
-- [ ] Build Tauri para produção (pacotes `.deb`, `.AppImage`, `.exe`, `.dmg`)
+- [ ] Empacotamento de produção do cliente Java
 - [ ] GitHub Actions CI — build, teste, push de imagem Docker
 - [ ] Templates Terraform para infraestrutura de lab (VMs, VPC, VPN)
 - [ ] Playbook Ansible para deploy automatizado do servidor C2

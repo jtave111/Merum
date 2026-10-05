@@ -6,10 +6,9 @@
 Test/
 CLAUDE.md
 ### Personal notes ###
-Learning/
+Ideas/Learning/
 Ideas/
-Merum-Web/SECURITY_UPGRADE.md
-Merum-Arsenal/CPP_STRUCTURE_GUIDE.md
+modules/CPP_STRUCTURE_GUIDE.md
 
 ### Java / Maven ###
 target/
@@ -61,8 +60,8 @@ build/
 *.a
 *.so
 compile_commands.json
-Merum-Arsenal/cpp/LocalFingerPrint/LocalFingerPrint
-Merum-Arsenal/cpp/Ping/Ping
+modules/cpp/LocalFingerPrint/LocalFingerPrint
+modules/cpp/Ping/Ping
 
 ### Logs ###
 *.log
@@ -78,12 +77,6 @@ replay_pid*
 .env.development
 .env.production
 .env.*.local
-
-### Next.js ###
-Merum-Web/.next/
-Merum-Web/node_modules/
-Merum-Web/tsconfig.tsbuildinfo
-Merum-Web/out/
 
 ### OS ###
 .DS_Store

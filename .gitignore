@@ -5,6 +5,12 @@
 ### Scratch / Test projects ###
 Test/
 CLAUDE.md
+
+### Python ###
+__pycache__/
+*.py[cod]
+*$py.class
+
 ### Personal notes ###
 Ideas/Learning/
 Ideas/

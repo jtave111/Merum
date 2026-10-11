@@ -1,6 +1,5 @@
 package com.manager.client.model;
 
-/** Display-only agent state used by Swing views. */
 public record AgentViewModel(
         String id,
         String status,

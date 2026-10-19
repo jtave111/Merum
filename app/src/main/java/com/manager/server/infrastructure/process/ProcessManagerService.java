@@ -3,6 +3,7 @@ package com.manager.server.infrastructure.process;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -74,6 +75,7 @@ public class ProcessManagerService {
             }
 
             return true;
+            
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
 
@@ -85,6 +87,11 @@ public class ProcessManagerService {
             }
         }
 
+    }
+
+    public List<ManagedProcess> findByName(String name){
+        return activeProcesses.values().stream().filter(p -> p.name()
+                .equalsIgnoreCase(name)).toList();
     }
 
 
